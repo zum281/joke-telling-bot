@@ -1,0 +1,24 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Roboto", sans-serif;
+    font-weight: 400;
+    font-size: 14pt;
+}
+
+body {
+    background-color: rgba(1, 237, 249, 0.1);
+}
+
+.typewriter-container {
+    border-bottom: 2px solid rgba(36, 46, 104, 0.7);
+    color: rgba(36, 46, 104, 0.7);
+    padding-bottom: 8px;
+    margin-bottom: 40px;
+    width: 90%;
+    min-height: 80px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+}
