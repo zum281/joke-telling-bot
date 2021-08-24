@@ -51,6 +51,7 @@ function App() {
         resetJoke();
         setLoading(true);
         resetTranscript();
+        handleMic();
         fetch("https://official-joke-api.appspot.com/jokes/random")
             .then((res) => res.json())
             .then((data) => {
