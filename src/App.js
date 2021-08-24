@@ -103,6 +103,7 @@ function App() {
     }, []);
 
     useEffect(() => {
+        console.log(synthRef.current.getVoices());
         setTimeout(() => {
             const myVoices = synthRef.current
                 .getVoices()
@@ -110,7 +111,6 @@ function App() {
                     (voice) =>
                         voice.lang === "en-US" && !voice.name.includes("Google")
                 );
-            console.log(myVoices);
             setVoices([...myVoices]);
 
             setSelectedVoice(myVoices[0]);
@@ -156,7 +156,7 @@ function App() {
                     </Button>
                 </div>
 
-                {voices && (
+                {voices.length !== 0 && (
                     <FormControl size="small" className={classes.select}>
                         <InputLabel shrink id="voice-select-label">
                             Voice
