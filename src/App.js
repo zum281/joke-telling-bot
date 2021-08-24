@@ -11,15 +11,33 @@ import {
     FormControl,
     InputLabel,
 } from "@material-ui/core";
+import MicIcon from "@material-ui/icons/Mic";
+import MicOffIcon from "@material-ui/icons/MicOff";
 import TypeWriter from "react-typewriter";
+import SpeechRecognition, {
+    useSpeechRecognition,
+} from "react-speech-recognition";
 
 function App() {
+    const commands = [
+        {
+            command: "Tell me a joke",
+            callback: () => getJoke(),
+        },
+    ];
+    const { listening, resetTranscript, browserSupportsSpeechRecognition } =
+        useSpeechRecognition({ commands });
     const classes = useStyles();
     const [joke, setJoke] = useState({ setup: null, punchline: null });
     const [loading, setLoading] = useState(false);
     const synthRef = useRef(window.speechSynthesis);
     const [voices, setVoices] = useState([]);
-    const [selectedVoice, setSelectedVoice] = useState(null);
+    const [selectedVoice, setSelectedVoice] = useState({});
+    const [micBtn, setMicBtn] = useState({
+        supported: browserSupportsSpeechRecognition,
+        text: "Start",
+        icon: <MicIcon />,
+    });
 
     const resetJoke = () => {
         setJoke({ setup: null, punchline: null });
@@ -28,6 +46,7 @@ function App() {
     const getJoke = () => {
         resetJoke();
         setLoading(true);
+        resetTranscript();
         fetch("https://official-joke-api.appspot.com/jokes/random")
             .then((res) => res.json())
             .then((data) => {
@@ -46,6 +65,25 @@ function App() {
                 setLoading(false);
                 console.log(err);
             });
+    };
+
+    const handleMic = () => {
+        if (listening) {
+            SpeechRecognition.stopListening();
+            let newMicBtn = { ...micBtn };
+            newMicBtn.text = "Start";
+            newMicBtn.icon = <MicIcon />;
+            setMicBtn({ ...newMicBtn });
+        } else {
+            SpeechRecognition.startListening({
+                continuous: true,
+                language: "en-US",
+            });
+            let newMicBtn = { ...micBtn };
+            newMicBtn.text = "Stop";
+            newMicBtn.icon = <MicOffIcon />;
+            setMicBtn({ ...newMicBtn });
+        }
     };
 
     useEffect(() => {
@@ -85,17 +123,34 @@ function App() {
                     )}
                 </div>
                 <img className={classes.dog} src={Dog} alt="Koje the dog" />
-                <Tooltip title="Press J to hear a joke" placement="right">
+                <div className={classes.btnsContainer}>
+                    <Tooltip title="Press J to hear a joke" placement="left">
+                        <Button
+                            className={classes.btn}
+                            variant="contained"
+                            color="primary"
+                            onClick={getJoke}
+                            size="small"
+                        >
+                            Tell me a joke!
+                        </Button>
+                    </Tooltip>
+
                     <Button
                         className={classes.btn}
                         variant="contained"
                         color="primary"
-                        onClick={getJoke}
-                        size="large"
+                        size="small"
+                        endIcon={micBtn.icon}
+                        disabled={!browserSupportsSpeechRecognition}
+                        onClick={handleMic}
                     >
-                        Tell me a joke!
+                        {micBtn.supported
+                            ? micBtn.text
+                            : "no speech recognition"}
                     </Button>
-                </Tooltip>
+                </div>
+
                 {voices && (
                     <FormControl size="small" className={classes.select}>
                         <InputLabel shrink id="voice-select-label">
@@ -152,7 +207,11 @@ const useStyles = makeStyles((theme) => {
             minWidth: "250px",
             maxWidth: "500px",
         },
-        btn: {
+        btnsContainer: {
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: theme.spacing(1),
             marginTop: theme.spacing(5),
         },
         loading: {
