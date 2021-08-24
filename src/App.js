@@ -24,6 +24,10 @@ function App() {
             command: "Tell me a joke",
             callback: () => getJoke(),
         },
+        {
+            command: "joke",
+            callback: () => getJoke(),
+        },
     ];
     const { listening, resetTranscript, browserSupportsSpeechRecognition } =
         useSpeechRecognition({ commands });
