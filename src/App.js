@@ -214,10 +214,15 @@ const useStyles = makeStyles((theme) => {
         },
         btnsContainer: {
             display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            flexDirection: "column",
             gap: theme.spacing(1),
             marginTop: theme.spacing(5),
+
+            [theme.breakpoints.up("sm")]: {
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+            },
         },
         loading: {
             position: "absolute",
@@ -233,6 +238,10 @@ const useStyles = makeStyles((theme) => {
         select: {
             marginTop: theme.spacing(3),
             minWidth: "100px",
+            maxWidth: "350px",
+            [theme.breakpoints.up("sm")]: {
+                maxWidth: "unset",
+            },
         },
     };
 });
