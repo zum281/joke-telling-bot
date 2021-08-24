@@ -6,6 +6,10 @@ import {
     Button,
     CircularProgress,
     Tooltip,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
 } from "@material-ui/core";
 import TypeWriter from "react-typewriter";
 
@@ -14,6 +18,8 @@ function App() {
     const [joke, setJoke] = useState({ setup: null, punchline: null });
     const [loading, setLoading] = useState(false);
     const synthRef = useRef(window.speechSynthesis);
+    const [voices, setVoices] = useState([]);
+    const [selectedVoice, setSelectedVoice] = useState(null);
 
     const resetJoke = () => {
         setJoke({ setup: null, punchline: null });
@@ -33,6 +39,7 @@ function App() {
                 setLoading(false);
                 let joke = `${data.setup}...${data.punchline}`;
                 const utterThis = new SpeechSynthesisUtterance(joke);
+                utterThis.voice = selectedVoice;
                 synthRef.current.speak(utterThis);
             })
             .catch((err) => {
@@ -51,6 +58,22 @@ function App() {
             window.removeEventListener("keyup", getJoke);
         };
     }, []);
+
+    useEffect(() => {
+        setTimeout(() => {
+            const myVoices = synthRef.current
+                .getVoices()
+                .filter(
+                    (voice) =>
+                        voice.lang === "en-US" && !voice.name.includes("Google")
+                );
+            console.log(myVoices);
+            setVoices([...myVoices]);
+
+            setSelectedVoice(myVoices[0]);
+        }, 100);
+    }, []);
+
     return (
         <div>
             <div className={classes.root}>
@@ -73,6 +96,26 @@ function App() {
                         Tell me a joke!
                     </Button>
                 </Tooltip>
+                {voices && (
+                    <FormControl size="small" className={classes.select}>
+                        <InputLabel shrink id="voice-select-label">
+                            Voice
+                        </InputLabel>
+                        <Select
+                            labelId="voice-select-label"
+                            value={selectedVoice}
+                            onChange={(e) => setSelectedVoice(e.target.value)}
+                            label="Voice"
+                        >
+                            {voices.map((voice) => (
+                                <MenuItem key={voice.name} value={voice}>
+                                    {voice.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                )}
+
                 {loading && (
                     <CircularProgress
                         className={classes.loading}
@@ -122,6 +165,10 @@ const useStyles = makeStyles((theme) => {
             lineHeight: 1.5,
             fontSize: "1.3rem",
             paddingRight: theme.spacing(1),
+        },
+        select: {
+            marginTop: theme.spacing(3),
+            minWidth: "100px",
         },
     };
 });
