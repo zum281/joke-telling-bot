@@ -1,6 +1,5 @@
 import React from "react";
-import { useState } from "react";
-import { useSpeechSynthesis } from "react-speech-kit";
+import { useState, useEffect, useRef } from "react";
 import Dog from "./assets/dog.png";
 import {
     makeStyles,
@@ -14,7 +13,8 @@ function App() {
     const classes = useStyles();
     const [joke, setJoke] = useState({ setup: null, punchline: null });
     const [loading, setLoading] = useState(false);
-    const { speak } = useSpeechSynthesis();
+    const synthRef = useRef(window.speechSynthesis);
+
     const resetJoke = () => {
         setJoke({ setup: null, punchline: null });
     };
@@ -31,7 +31,9 @@ function App() {
                 };
                 setJoke({ ...newJoke });
                 setLoading(false);
-                speak({ text: `${data.setup}...${data.punchline}` });
+                let joke = `${data.setup}...${data.punchline}`;
+                const utterThis = new SpeechSynthesisUtterance(joke);
+                synthRef.current.speak(utterThis);
             })
             .catch((err) => {
                 setLoading(false);
@@ -39,35 +41,51 @@ function App() {
             });
     };
 
+    useEffect(() => {
+        window.addEventListener("keyup", (e) => {
+            if (e.code === "KeyJ") {
+                getJoke();
+            }
+        });
+        return () => {
+            window.removeEventListener("keyup", getJoke);
+        };
+    }, []);
     return (
-        <div className={classes.root}>
-            <div class="typewriter-container">
-                {joke.setup && joke.punchline && (
-                    <TypeWriter
-                        initDelay={0}
-                        typing={1}
-                        className={classes.textJoke}
+        <div>
+            <div className={classes.root}>
+                <div className="typewriter-container">
+                    {joke.setup && joke.punchline && (
+                        <TypeWriter typing={1} className={classes.textJoke}>
+                            {joke.setup}... {joke.punchline}
+                        </TypeWriter>
+                    )}
+                </div>
+                <img className={classes.dog} src={Dog} alt="Koje the dog" />
+                <Tooltip title="Press J to hear a joke" placement="right">
+                    <Button
+                        className={classes.btn}
+                        variant="contained"
+                        color="primary"
+                        onClick={getJoke}
+                        size="large"
                     >
-                        {joke.setup}... {joke.punchline}
-                    </TypeWriter>
+                        Tell me a joke!
+                    </Button>
+                </Tooltip>
+                {loading && (
+                    <CircularProgress
+                        className={classes.loading}
+                        color="primary"
+                    />
                 )}
             </div>
-            <img className={classes.dog} src={Dog} alt="Koje the dog" />
-            <Tooltip title="Press J to hear a joke" placement="right">
-                <Button
-                    className={classes.btn}
-                    variant="contained"
-                    color="primary"
-                    onClick={getJoke}
-                    size="large"
-                >
-                    Tell me a joke!
-                </Button>
-            </Tooltip>
-
-            {loading && (
-                <CircularProgress className={classes.loading} color="primary" />
-            )}
+            <div className="footer">
+                Vector image by{" "}
+                <a href="https://www.freepik.com/catalyststuff">
+                    catalyststuff
+                </a>
+            </div>
         </div>
     );
 }
